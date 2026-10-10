@@ -1,0 +1,2 @@
+Days for shipment (scheduled),Benefit per order,Sales per customer,Order Item Discount,Order Item Discount Rate,Order Item Quantity,Sales,Order Item Total,Order Profit Per Order,Product Price,Type,Customer Segment,Market,Shipping Mode,Predicted_Risk,Low_Risk_Probability,High_Risk_Probability
+4,25.0,150.0,10.0,0.1,2,150.0,140.0,25.0,75.0,DEBIT,Consumer,Pacific Asia,Standard Class,HIGH,35.0,65.0

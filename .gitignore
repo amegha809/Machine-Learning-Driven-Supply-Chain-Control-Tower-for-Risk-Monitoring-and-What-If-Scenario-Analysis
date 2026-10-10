@@ -1,0 +1,18 @@
+# Original dataset containing customer information
+DataCoSupplyChainDataset.csv
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+
+# VS Code local settings
+.vscode/
+
+# Temporary files
+*.tmp
+
+models/*.pkl
