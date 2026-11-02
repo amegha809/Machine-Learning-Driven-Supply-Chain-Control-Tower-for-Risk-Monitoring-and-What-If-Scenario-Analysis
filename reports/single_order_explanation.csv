@@ -1,0 +1,23 @@
+Feature,Feature Value,SHAP Contribution,Direction,Absolute Contribution
+Shipping Mode_Standard Class,1.0,-0.09277927788996912,Pushes model output lower,0.09277927788996912
+Days for shipment (scheduled),4.0,-0.0650502128879753,Pushes model output lower,0.0650502128879753
+Customer Segment_Corporate,0.0,-0.022150528380862917,Pushes model output lower,0.022150528380862917
+Order Item Discount,13.10999966,-0.021310473951590234,Pushes model output lower,0.021310473951590234
+Order Item Discount Rate,0.039999999,-0.016936649375485117,Pushes model output lower,0.016936649375485117
+Market_Pacific Asia,1.0,-0.014094253276144938,Pushes model output lower,0.014094253276144938
+Sales per customer,314.6400146,-0.012963133994250621,Pushes model output lower,0.012963133994250621
+Product Price,327.75,-0.010848249955643974,Pushes model output lower,0.010848249955643974
+Type_TRANSFER,0.0,0.009757058292794819,Pushes model output higher,0.009757058292794819
+Order Item Total,314.6400146,-0.008992253132964,Pushes model output lower,0.008992253132964
+Shipping Mode_Second Class,0.0,-0.00872586517761033,Pushes model output lower,0.00872586517761033
+Benefit per order,91.25,-0.008459589329786923,Pushes model output lower,0.008459589329786923
+Shipping Mode_Same Day,0.0,0.005196493509129126,Pushes model output higher,0.005196493509129126
+Type_DEBIT,1.0,0.0047054248373542855,Pushes model output higher,0.0047054248373542855
+Sales,327.75,-0.004021470354247714,Pushes model output lower,0.004021470354247714
+Order Profit Per Order,91.25,-0.0038025429667033783,Pushes model output lower,0.0038025429667033783
+Type_PAYMENT,0.0,-0.003729024201269382,Pushes model output lower,0.003729024201269382
+Customer Segment_Home Office,0.0,-0.002676268822154978,Pushes model output lower,0.002676268822154978
+Market_Europe,0.0,-0.0020075437566068346,Pushes model output lower,0.0020075437566068346
+Market_USCA,0.0,0.0008807482555270499,Pushes model output higher,0.0008807482555270499
+Market_LATAM,0.0,-0.0005135680352848895,Pushes model output lower,0.0005135680352848895
+Order Item Quantity,1.0,0.0004434878340906778,Pushes model output higher,0.0004434878340906778

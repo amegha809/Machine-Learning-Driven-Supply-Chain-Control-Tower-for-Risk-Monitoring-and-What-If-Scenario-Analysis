@@ -1,5 +1,11 @@
-Shipping Mode,Predicted Risk,High-Risk Probability (%)
-Standard Class,LOW,37.2
-Second Class,HIGH,57.0
-First Class,HIGH,65.0
-Same Day,LOW,50.0
+Scenario Type,Shipping Mode,Scheduled Days,Predicted Risk,Late-Delivery Probability (%),Change from Original (%)
+Shipping Mode,Standard Class,4,LOW,37.0,0.0
+Shipping Mode,Second Class,4,HIGH,55.0,18.0
+Shipping Mode,First Class,4,HIGH,67.0,30.0
+Shipping Mode,Same Day,4,LOW,48.0,11.0
+Scheduled Days,Standard Class,1,HIGH,65.0,28.0
+Scheduled Days,Standard Class,2,HIGH,63.0,26.0
+Scheduled Days,Standard Class,3,HIGH,56.0,19.0
+Scheduled Days,Standard Class,4,LOW,37.0,0.0
+Scheduled Days,Standard Class,5,LOW,37.0,0.0
+Scheduled Days,Standard Class,6,LOW,37.0,0.0

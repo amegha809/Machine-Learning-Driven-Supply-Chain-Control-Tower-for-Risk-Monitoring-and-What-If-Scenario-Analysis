@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix,recall_score,precision_score,f1_score
 from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from sklearn.pipeline import make_pipeline
@@ -49,19 +50,19 @@ rf_model.fit(X_train, y_train)
 print("Model training completed successfully!")
 
 # Make predictions on the test data
-y_pred = rf_model.predict(X_test)
+rf_pred = rf_model.predict(X_test)
 
 # Evaluate the model
-accuracy = accuracy_score(y_test, y_pred)
+accuracy = accuracy_score(y_test, rf_pred)
 
 print("\n--- Random Forest Model Evaluation ---")
 print("Accuracy:", round(accuracy * 100, 2), "%")
 
 print("\nClassification Report:")
-print(classification_report(y_test, y_pred))
+print(classification_report(y_test, rf_pred))
 
 print("\nConfusion Matrix:")
-print(confusion_matrix(y_test, y_pred))
+print(confusion_matrix(y_test, rf_pred))
 
 # Create folder for trained models
 os.makedirs("models", exist_ok=True)
@@ -104,28 +105,77 @@ print(classification_report(y_test, lr_pred))
 print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, lr_pred))
 
+# Save the trained Logistic Regression model
+os.makedirs("models", exist_ok=True)
 
-# Compare both trained models
+joblib.dump(lr_model, "models/logistic_regression_model.pkl")
 
-rf_pred = rf_model.predict(X_test)
+print("\nLogistic Regression model saved successfully!")
+print("Location: models/logistic_regression_model.pkl")
+
+# Train Decision Tree Classifier
+
+dt_model = DecisionTreeClassifier(
+    random_state=42,
+    max_depth=10,
+    class_weight="balanced"
+)
+
+print("\nTraining Decision Tree model...")
+
+dt_model.fit(X_train, y_train)
+
+print("Decision Tree training completed!")
+
+# Make predictions
+dt_pred = dt_model.predict(X_test)
+
+# Evaluate the model
+dt_accuracy = accuracy_score(y_test, dt_pred)
+
+print("\n--- Decision Tree Evaluation ---")
+print("Accuracy:", round(dt_accuracy * 100, 2), "%")
+
+print("\nClassification Report:")
+print(classification_report(y_test, dt_pred))
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, dt_pred))
+
+# Save the trained Decision Tree model
+joblib.dump(dt_model, "models/decision_tree_model.pkl")
+
+print("\nDecision Tree model saved successfully!")
+print("Location: models/decision_tree_model.pkl")
+
+
+# Compare all three trained models
 
 comparison = pd.DataFrame({
-    "Model": ["Random Forest", "Logistic Regression"],
+    "Model": [
+        "Random Forest",
+        "Logistic Regression",
+        "Decision Tree"
+    ],
     "Accuracy": [
         accuracy_score(y_test, rf_pred),
-        accuracy_score(y_test, lr_pred)
+        accuracy_score(y_test, lr_pred),
+        accuracy_score(y_test, dt_pred)
     ],
     "Precision": [
-        precision_score(y_test, rf_pred),
-        precision_score(y_test, lr_pred)
+        precision_score(y_test, rf_pred, zero_division=0),
+        precision_score(y_test, lr_pred, zero_division=0),
+        precision_score(y_test, dt_pred, zero_division=0)
     ],
     "Recall": [
-        recall_score(y_test, rf_pred),
-        recall_score(y_test, lr_pred)
+        recall_score(y_test, rf_pred, zero_division=0),
+        recall_score(y_test, lr_pred, zero_division=0),
+        recall_score(y_test, dt_pred, zero_division=0)
     ],
     "F1-Score": [
-        f1_score(y_test, rf_pred),
-        f1_score(y_test, lr_pred)
+        f1_score(y_test, rf_pred, zero_division=0),
+        f1_score(y_test, lr_pred, zero_division=0),
+        f1_score(y_test, dt_pred, zero_division=0)
     ]
 })
 
@@ -188,4 +238,27 @@ plt.savefig("models/feature_importance.png", dpi=300)
 print("\nFeature importance chart saved successfully!")
 
 # Display the chart
+plt.show()
+
+# Model Comparison Visualization
+
+comparison_metrics = comparison.set_index("Model")
+
+comparison_metrics.plot(
+    kind="bar",
+    figsize=(10, 6)
+)
+
+plt.title("Performance Comparison of Machine Learning Models")
+plt.xlabel("Machine Learning Models")
+plt.ylabel("Evaluation Score")
+plt.ylim(0, 1)
+plt.xticks(rotation=0)
+plt.legend(title="Evaluation Metrics")
+plt.tight_layout()
+
+plt.savefig("models/model_comparison_chart.png", dpi=300)
+
+print("\nModel comparison chart saved successfully!")
+
 plt.show()
