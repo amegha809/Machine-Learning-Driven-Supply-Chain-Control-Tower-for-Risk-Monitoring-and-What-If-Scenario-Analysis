@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+
 # Load dataset and trained model
 df = pd.read_csv("processed/supply_chain_processed.csv")
 X = df.drop(columns=["Late_delivery_risk"])
@@ -119,7 +120,7 @@ else:
             row["Feature"], row["Feature"]
         )
         print(f"- {feature} contributed towards lower late-delivery risk.")
-        
+
 # Save the explanation
 os.makedirs("reports", exist_ok=True)
 
