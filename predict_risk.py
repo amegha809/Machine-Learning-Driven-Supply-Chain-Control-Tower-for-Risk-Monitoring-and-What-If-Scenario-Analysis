@@ -129,21 +129,16 @@ print(list(X.columns))
 
 print("\nEnter the order details:")
 
-scheduled_days = int(
-    input("Days for shipment (scheduled): ")
-)
-
-benefit = float(input("Benefit per order: "))
+scheduled_days = int(input("Days for shipment (scheduled): "))
 sales_customer = float(input("Sales per customer: "))
 discount = float(input("Order Item Discount: "))
 discount_rate = float(input("Order Item Discount Rate: "))
 quantity = int(input("Order Item Quantity: "))
 sales = float(input("Sales: "))
 item_total = float(input("Order Item Total: "))
-profit = float(input("Order Profit Per Order: "))
 price = float(input("Product Price: "))
 
-order_type = input("Type (DEBIT, TRANSFER, PAYMENT): ").strip()
+order_type = input("Type (CASH, DEBIT, PAYMENT, TRANSFER): ").strip()
 segment = input("Customer Segment (Consumer, Corporate, Home Office): ").strip()
 market = input("Market (Africa, Europe, LATAM, Pacific Asia, USCA): ").strip()
 shipping_mode = input(
@@ -152,40 +147,18 @@ shipping_mode = input(
 
 sample_order = {
     "Days for shipment (scheduled)": scheduled_days,
-    "Benefit per order": benefit,
     "Sales per customer": sales_customer,
     "Order Item Discount": discount,
     "Order Item Discount Rate": discount_rate,
     "Order Item Quantity": quantity,
     "Sales": sales,
     "Order Item Total": item_total,
-    "Order Profit Per Order": profit,
     "Product Price": price,
     "Type": order_type,
     "Customer Segment": segment,
     "Market": market,
     "Shipping Mode": shipping_mode
 }
-
-sample_df = pd.DataFrame([sample_order])
-
-sample_encoded = pd.get_dummies(
-    sample_df,
-    columns=[
-        "Type",
-        "Customer Segment",
-        "Market",
-        "Shipping Mode"
-    ],
-    drop_first=True,
-    dtype="int8"
-)
-
-sample_encoded = sample_encoded.reindex(
-    columns=X.columns,
-    fill_value=0
-)
-
 
 # Validate numeric inputs
 if not 0 <= discount_rate <= 0.25:
@@ -203,12 +176,15 @@ if scheduled_days <= 0:
 if discount < 0 or sales < 0 or item_total < 0 or price < 0:
     print("Discount, Sales, Item Total, and Product Price cannot be negative.")
     exit()
+if sales_customer < 0:
+    print("Sales per customer cannot be negative.")
+    exit()
 
 print("\nOrder details entered successfully!")
 
 
 # Validate categorical inputs
-valid_types = ["DEBIT", "TRANSFER", "PAYMENT"]
+valid_types = ["CASH", "DEBIT", "PAYMENT", "TRANSFER"]
 valid_segments = ["Consumer", "Corporate", "Home Office"]
 valid_markets = ["Africa", "Europe", "LATAM", "Pacific Asia", "USCA"]
 valid_shipping_modes = [
@@ -231,7 +207,24 @@ if shipping_mode not in valid_shipping_modes:
     print("Invalid Shipping Mode.")
     exit()
 
+sample_df = pd.DataFrame([sample_order])
 
+sample_encoded = pd.get_dummies(
+    sample_df,
+    columns=[
+        "Type",
+        "Customer Segment",
+        "Market",
+        "Shipping Mode"
+    ],
+    drop_first=False,
+    dtype="int8"
+)
+
+sample_encoded = sample_encoded.reindex(
+    columns=X.columns,
+    fill_value=0
+)
 # Predict late-delivery risk
 prediction = model.predict(sample_encoded)[0]
 

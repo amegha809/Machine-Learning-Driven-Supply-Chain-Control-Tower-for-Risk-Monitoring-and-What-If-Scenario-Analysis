@@ -69,15 +69,31 @@ print(explanation.head(10).to_string(index=False))
 
 print("\n--- Simple Language Explanation ---")
 
+# Remove unselected one-hot encoded categorical features
+categorical_prefixes = (
+    "Shipping Mode_",
+    "Type_",
+    "Market_",
+    "Customer Segment_"
+)
+
+is_unselected_category = (
+    explanation["Feature"].str.startswith(categorical_prefixes)
+    & (explanation["Feature Value"] == 0)
+)
+
+display_explanation = explanation[~is_unselected_category].copy()
+
 # Select features that increase late-delivery risk
-risk_increasing = explanation[
-    explanation["SHAP Contribution"] > 0
+risk_increasing = display_explanation[
+    display_explanation["SHAP Contribution"] > 0
 ].head(3)
 
 # Select features that decrease late-delivery risk
-risk_decreasing = explanation[
-    explanation["SHAP Contribution"] < 0
+risk_decreasing = display_explanation[
+    display_explanation["SHAP Contribution"] < 0
 ].head(3)
+
 
 # Convert feature names into simple language
 feature_names = {
@@ -88,8 +104,6 @@ feature_names = {
     "Type_TRANSFER": "transfer payment type",
     "Type_DEBIT": "debit payment type",
     "Type_PAYMENT": "payment transaction type",
-    "Order Profit Per Order": "profit earned per order",
-    "Benefit per order": "benefit received per order",
     "Order Item Discount": "discount given on the order",
     "Order Item Discount Rate": "discount percentage",
     "Sales per customer": "sales value per customer",

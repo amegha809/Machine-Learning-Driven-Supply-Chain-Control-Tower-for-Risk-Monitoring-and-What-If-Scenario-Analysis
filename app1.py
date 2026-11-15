@@ -61,14 +61,12 @@ HIGH_RISK_PATH = ROOT / "reports" / "high_risk_orders.csv"
 TARGET = "Late_delivery_risk"
 NUMERIC_FIELDS = [
     ("Days for shipment (scheduled)", "4"),
-    ("Benefit per order", "50"),
     ("Sales per customer", "150"),
     ("Order Item Discount", "15"),
     ("Order Item Discount Rate", "0.05"),
     ("Order Item Quantity", "1"),
     ("Sales", "165"),
     ("Order Item Total", "150"),
-    ("Order Profit Per Order", "25"),
     ("Product Price", "165"),
 ]
 CATEGORICAL_OPTIONS = {
@@ -858,6 +856,8 @@ class SupplyChainApp(ctk.CTk):
             dummy_column = f"{category}_{selected_value}"
             if dummy_column in self.feature_columns:
                 encoded.loc[0, dummy_column] = 1
+        print("MODEL INPUT:")
+        print(encoded.reindex(columns=self.feature_columns, fill_value=0).to_string())
         return encoded.reindex(columns=self.feature_columns, fill_value=0)
 
     
@@ -869,6 +869,7 @@ class SupplyChainApp(ctk.CTk):
         high_index = classes.index(1) if 1 in classes else len(classes) - 1
         return prediction, float(probabilities[high_index])
 
+    
     def _explain_prediction(self, model_input, prediction):
         if not SHAP_AVAILABLE:
             return "SHAP is not installed. Explanation is unavailable."
@@ -892,7 +893,6 @@ class SupplyChainApp(ctk.CTk):
                 contributions = np.asarray(
                     shap_values[high_index]
                 )[0]
-
             else:
                 shap_values = np.asarray(shap_values)
 
@@ -908,7 +908,6 @@ class SupplyChainApp(ctk.CTk):
 
                 elif shap_values.ndim == 2:
                     contributions = shap_values[0]
-
                 else:
                     raise ValueError(
                         "Unsupported SHAP output format."
@@ -919,6 +918,20 @@ class SupplyChainApp(ctk.CTk):
                 "Feature Value": model_input.iloc[0].values,
                 "Contribution": contributions
             })
+
+            # Hide unselected categorical features from the display
+            categorical_prefixes = tuple(
+                category + "_" for category in CAT_COLUMNS
+            )
+
+            unselected_categories = (
+                explanation["Feature"].str.startswith(categorical_prefixes)
+                & (pd.to_numeric(
+                    explanation["Feature Value"], errors="coerce"
+                ) == 0)
+            )
+
+            explanation = explanation[~unselected_categories].copy()
 
             increasing = explanation[
                 explanation["Contribution"] > 0
@@ -936,14 +949,9 @@ class SupplyChainApp(ctk.CTk):
                     prefix = category + "_"
 
                     if feature.startswith(prefix):
-                        selected = (
-                            "selected" if float(value) == 1
-                            else "not selected"
-                        )
-
                         return (
                             f"{category} = "
-                            f"{feature[len(prefix):]} ({selected})"
+                            f"{feature[len(prefix):]} (selected)"
                         )
 
                 return f"{feature} (value: {value})"
@@ -1004,6 +1012,7 @@ class SupplyChainApp(ctk.CTk):
         except Exception as exc:
             return f"Explanation unavailable: {exc}"
 
+
     def _collect_order(self, numeric_entries, categorical_boxes):
         order = {}
         for field, entry in numeric_entries.items():
@@ -1051,7 +1060,6 @@ class SupplyChainApp(ctk.CTk):
             "Predict delivery risk",
             "Enter order details to estimate the probability of late delivery."
         )
-
         if not MODEL_PATH.exists():
             notice = ctk.CTkFrame(
                 self.content,
@@ -1169,9 +1177,13 @@ class SupplyChainApp(ctk.CTk):
                         raise ValueError(
                             f"{key} cannot be negative."
                         )
+                print("\nINPUT ORDER:")
+                print(order)
 
                 prediction, high_probability = self._predict(order)
 
+                print("PREDICTED CLASS:", prediction)
+                print("HIGH RISK PROBABILITY:", high_probability)
                 risk = "HIGH" if prediction == 1 else "LOW"
 
                 color = (
@@ -1250,14 +1262,12 @@ class SupplyChainApp(ctk.CTk):
 
         original_defaults = {
             "Days for shipment (scheduled)": "4",
-            "Benefit per order": "25",
             "Sales per customer": "150",
             "Order Item Discount": "10",
             "Order Item Discount Rate": "0.10",
             "Order Item Quantity": "2",
             "Sales": "150",
             "Order Item Total": "140",
-            "Order Profit Per Order": "25",
             "Product Price": "75"
         }
 
@@ -1496,12 +1506,10 @@ class SupplyChainApp(ctk.CTk):
                 )
 
             for key in [
-                "Benefit per order",
                 "Sales per customer",
                 "Order Item Discount",
                 "Sales",
                 "Order Item Total",
-                "Order Profit Per Order",
                 "Product Price"
             ]:
                 if order[key] < 0:
@@ -1766,7 +1774,6 @@ class SupplyChainApp(ctk.CTk):
             "Shipping Mode",
             "Scheduled Shipment Days",
             "Sales",
-            "Order Profit Per Order"
         )
 
         tree = ttk.Treeview(
@@ -1783,7 +1790,6 @@ class SupplyChainApp(ctk.CTk):
             "Shipping Mode": 150,
             "Scheduled Shipment Days": 190,
             "Sales": 120,
-            "Order Profit Per Order": 190
         }
 
         for column in columns:
@@ -1967,18 +1973,14 @@ class SupplyChainApp(ctk.CTk):
                 shipping_mode = get_shipping_mode(row)
                 scheduled_days = row["Days for shipment (scheduled)"]
                 sales = float(row["Sales"])
-                profit = float(row["Order Profit Per Order"])
-
                 values = (
                     actual_risk,
                     predicted_risk,
                     f"{probability:.2f}%",
                     shipping_mode,
                     scheduled_days,
-                    f"{sales:.2f}",
-                    f"{profit:.2f}"
+                    f"{sales:.2f}"
                 )
-
                 tree.insert(
                     "",
                     "end",
@@ -2008,13 +2010,12 @@ class SupplyChainApp(ctk.CTk):
                 shipping_mode = get_shipping_mode(row)
 
                 details_text = (
-                    f"Actual Risk: {actual_risk}     "
-                    f"Predicted Risk: {predicted_risk}     "
+                    f"Actual Risk: {actual_risk}\n"
+                    f"Predicted Risk: {predicted_risk}\n"
                     f"High-Risk Probability: {probability:.2f}%\n"
-                    f"Shipping Mode: {shipping_mode}     "
-                    f"Scheduled Days: {row['Days for shipment (scheduled)']}     "
-                    f"Sales: {float(row['Sales']):.2f}     "
-                    f"Order Profit: {float(row['Order Profit Per Order']):.2f}"
+                    f"Shipping Mode: {shipping_mode}\n"
+                    f"Scheduled Days: {row['Days for shipment (scheduled)']}\n"
+                    f"Sales: {float(row['Sales']):.2f}"
                 )
 
                 details_label.configure(

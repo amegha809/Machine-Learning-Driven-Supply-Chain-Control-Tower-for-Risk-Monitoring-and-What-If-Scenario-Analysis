@@ -3,6 +3,9 @@ from sklearn.model_selection import train_test_split
 import os
 #dataframe
 df = pd.read_csv("DataCoSupplyChainDataset.csv", encoding="latin1")#latin1 encoding utf-8 cant read all the characters
+print("\nProfit column sample:")
+print(df[["Order Profit Per Order", "order date (DateOrders)",
+          "shipping date (DateOrders)"]].head(10))
 print("printing head 5 rows")
 print(df.head(5))
 print("rows and columns")
@@ -89,13 +92,10 @@ print(df["Late_delivery_risk"].value_counts())
 print("\nMissing target values:")
 print(df["Late_delivery_risk"].isnull().sum())
 
-#selecting input features and target variable 
-
 # Select a smaller set of useful input features
 features = [
     "Type",
     "Days for shipment (scheduled)",
-    "Benefit per order",
     "Sales per customer",
     "Customer Segment",
     "Market",
@@ -104,7 +104,6 @@ features = [
     "Order Item Quantity",
     "Sales",
     "Order Item Total",
-    "Order Profit Per Order",
     "Product Price",
     "Shipping Mode"
 ]
@@ -124,7 +123,7 @@ X_encoded = pd.get_dummies(
         "Market",
         "Shipping Mode"
     ],
-    drop_first=True,
+    drop_first=False,
     dtype="int8"
 )
 

@@ -11,19 +11,20 @@ model = joblib.load("models/random_forest_model.pkl")
 
 # Load processed data to get the exact training feature columns
 df = pd.read_csv("processed/supply_chain_processed.csv")
+print("Available scheduled days:")
+print(sorted(df["Days for shipment (scheduled)"].unique()))
+X = df.drop("Late_delivery_risk", axis=1)
 X = df.drop(columns=["Late_delivery_risk"])
 
 # Create a sample order
 order = {
     "Days for shipment (scheduled)": 4,
-    "Benefit per order": 25.0,
     "Sales per customer": 150.0,
     "Order Item Discount": 10.0,
     "Order Item Discount Rate": 0.10,
     "Order Item Quantity": 2,
     "Sales": 150.0,
     "Order Item Total": 140.0,
-    "Order Profit Per Order": 25.0,
     "Product Price": 75.0,
     "Type": "DEBIT",
     "Customer Segment": "Consumer",
@@ -117,29 +118,20 @@ def explain_order_risk(order_details):
         by="Absolute Contribution",
         ascending=False
     )
-
     # Remove inactive categorical features
-    inactive_features = [
-        "Shipping Mode_Standard Class",
-        "Shipping Mode_Second Class",
-        "Shipping Mode_Same Day",
-        "Type_DEBIT",
-        "Type_PAYMENT",
-        "Type_TRANSFER",
-        "Customer Segment_Corporate",
-        "Customer Segment_Home Office",
-        "Market_Europe",
-        "Market_LATAM",
-        "Market_Pacific Asia",
-        "Market_USCA"
-    ]
+    categorical_prefixes = (
+    "Shipping Mode_",
+    "Type_",
+    "Market_",
+    "Customer Segment_"
+    )
 
-    explanation = explanation[
-        ~(
-            explanation["Feature"].isin(inactive_features)
-            & (explanation["Feature Value"] == 0)
-        )
-    ].copy()
+    is_inactive_category = (
+    explanation["Feature"].str.startswith(categorical_prefixes)
+    & (explanation["Feature Value"] == 0)
+    )
+
+    explanation = explanation[~is_inactive_category].copy()
 
     # Convert feature names into simple language
     feature_names = {
@@ -156,15 +148,17 @@ def explain_order_risk(order_details):
         "Market_LATAM": "LATAM market",
         "Market_Pacific Asia": "Pacific Asia market",
         "Market_USCA": "USCA market",
-        "Order Profit Per Order": "Profit per order",
-        "Benefit per order": "Benefit per order",
         "Order Item Discount": "Order discount",
         "Order Item Discount Rate": "Discount percentage",
         "Sales per customer": "Sales per customer",
         "Order Item Total": "Total order value",
         "Product Price": "Product price",
         "Sales": "Sales amount",
-        "Order Item Quantity": "Product quantity"
+        "Order Item Quantity": "Product quantity",
+        "Shipping Mode_First Class": "First Class shipping",
+        "Type_CASH": "Cash payment",
+        "Customer Segment_Consumer": "Consumer customer segment",
+        "Market_Africa": "Africa market",
     }
 
     explanation["Feature"] = explanation["Feature"].map(
@@ -311,7 +305,7 @@ def run_scenario_analysis():
         })
 
     # Test different scheduled shipment durations
-    for days in [1, 2, 3, 4, 5, 6]:
+    for days in [0, 1, 2, 4]:
         scenario = order.copy()
         scenario["Days for shipment (scheduled)"] = days
 
@@ -410,3 +404,5 @@ if __name__ == "__main__":
         "Sales": 200.0,
         "Order Item Quantity": 3
     })
+
+    run_scenario_analysis()
